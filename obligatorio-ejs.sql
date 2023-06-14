@@ -57,6 +57,8 @@ AND EXISTS (
     AND m.nombreUsuario = su.nombreUsuario
 );
 
+-- EMPIEZAN LOS 4
+
 -- Ejercicio 4
 -- Los servidores que no exista algun usuario de uruguay o argentina que no este unido
 SELECT s.nombre, s.descripcion
@@ -90,6 +92,70 @@ WHERE NOT EXISTS (
 );
 -- La interseccion da los servidores que tegan a todos los usuarios de uruguay o argentina y que no hayan mandado mensajes
 
+-- Servidores que tengan al menos un usuario del conjunto de abajo
+SELECT s.nombre, s.descripcion
+FROM servidor s
+WHERE s.nombre IN (
+    SELECT su.nombreServidor
+    FROM se_une su
+    WHERE su.nombreUsuario IN (
+        -- Conjunto de uru o arg que no tengan msj en ningun servidor
+        SELECT u.nombreUsuario 
+        FROM usuario u
+        WHERE u.pais IN ('URUGUAY', 'ARGENTINA')
+        AND NOT EXISTS (
+            SELECT 1
+            FROM mensaje m
+            WHERE m.nombreUsuario = u.nombreUsuario
+        )
+    )
+);
+
+
+SELECT s.nombre, s.descripcion
+FROM servidor s
+WHERE NOT EXISTS (
+    SELECT 1 
+    FROM usuario u
+    WHERE u.pais IN ('URUGUAY', 'ARGENTINA')
+    AND EXISTS (
+        SELECT 1
+        FROM mensaje m
+        WHERE m.nombreUsuario = u.nombreUsuario
+    )
+    AND NOT EXISTS (
+        SELECT 1
+        FROM se_une su
+        WHERE su.nombreUsuario = u.nombreUsuario
+    )
+);
+
+-- Ejercicio 4
+-- Todos los servidores que tengan a todos los usuarios de uruguay o argentina que no tengan mensajes en ningun servidor
+SELECT s.nombre, s.descripcion
+FROM servidor s
+WHERE NOT EXISTS (
+    SELECT 1 
+    FROM usuario u
+    WHERE u.pais IN ('URUGUAY', 'ARGENTINA')
+    AND NOT EXISTS (
+    -- Que no tengan mensajes??
+        SELECT 1
+        FROM mensaje m
+        WHERE m.nombreUsuario = u.nombreUsuario
+    )
+    AND NOT EXISTS (
+        SELECT 1
+        FROM se_une su
+        WHERE su.nombreUsuario = u.nombreUsuario
+    	AND s.nombre = su.nombreServidor
+    )
+);
+
+
+-- TERMINAN LOS 4
+
+
 -- Ejercicio 5
 SELECT s.nombreUsuarioCreador
 FROM servidor s
@@ -97,7 +163,7 @@ WHERE s.fechaCreacion >= sysdate - 730 -- El menos funciona para los dias sino c
 GROUP BY s.nombreUsuarioCreador 
 HAVING count (s.nombre) > 0 
 ORDER BY count(s.nombre) DESC
-FETCH FIRST 3 ROWS ONLY; -- LIMIT 3;
+FETCH FIRST 3 ROWS ONLY;
 
 -- Ejercicio 6
 SELECT s.*
