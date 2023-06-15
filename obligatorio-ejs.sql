@@ -2,7 +2,6 @@ ALTER SESSION SET NLS_DATE_FORMAT='DD/MM/YYYY';
 
 -- Obligatorio
 -- Ejericicio 1
--- Los nombres de usuario que esten unidos al servidor SERVAPP y que no hayan mandado mensaje
 SELECT su.nombreUsuario
 FROM se_une su
 WHERE su.nombreServidor = 'SERVAPP'
@@ -42,7 +41,7 @@ AND EXISTS (
 SELECT DISTINCT su.nombreUsuario
 FROM se_une su
 WHERE su.nombreUsuario IN (
-    -- Estan unidos a por lo menos 2 dos canales
+    -- Estan unidos a por lo menos 2 dos servidores
     SELECT su1.nombreUsuario
     FROM se_une su1
     GROUP BY su1.nombreUsuario
@@ -200,22 +199,22 @@ WHERE u.nombreUsuario IN (
     SELECT su.nombreUsuario
     FROM se_une su
     WHERE su.nombreUsuario IN (
-        -- Devuelve el usuario con mas mensajes contando todos los canales de un servidor
+        -- Usuarios con mas mensajes contando todos los canales de un servidor
         SELECT m.nombreUsuario
         FROM canal c, mensaje m
         WHERE m.nombreCanal = c.nombreCanal
         GROUP BY c.nombreServidor, m.nombreUsuario
         HAVING count(m.nombreCanal) = (
-            -- Cuenta cantidad de mensajes mandados por usuario en cada servidor y devuelve el max
-            SELECT MAX(count(m.nombreCanal))
+            -- Maxima cantidad de mensajes mandados por usuario en un servidor
+            SELECT MAX(count(1))
             FROM canal c, mensaje m
             WHERE m.nombreCanal = c.nombreCanal
             GROUP BY c.nombreServidor, m.nombreUsuario
-            HAVING count(m.nombreCanal) > 0
+            HAVING count(1) > 0
         )
     )
     AND su.nombreServidor IN (
-        -- Devuelvo servidores que tengan menos de 15 dias de creacion
+        -- Servidores que tengan menos de 15 dias de creacion
     	SELECT s.nombre
     	FROM servidor s
     	WHERE s.fechaCreacion >= sysdate - 15
@@ -223,38 +222,25 @@ WHERE u.nombreUsuario IN (
 );
 
 -- Ejercicio 8
-SELECT * 
--- Devuelve servidores con mayor cantidad de canales
-FROM servidor s1
-WHERE s1.nombre IN (
-    SELECT c.nombreServidor
-    FROM canal c
-    GROUP BY c.nombreServidor
-    HAVING count(c.nombreCanal) = (
-    	-- Devuelve mayor cantidad de canales en un servidor
-    	SELECT MAX(count(c1.nombreCanal))
-    	FROM canal c1
-    	GROUP BY c1.nombreServidor
-    )
-)
-INTERSECT
--- Devuelve servidores creados por Pedro Gonzalez o Juan ORT
-SELECT *
-FROM servidor s2
-WHERE s2.nombreUsuarioCreador IN ('PEDRO GONZALEZ', 'JUAN ORT')
-INTERSECT
--- Devuelve servidores con mensajes
-SELECT *
-FROM servidor s3
-WHERE s3.nombre IN (
+SELECT s.*
+FROM servidor s
+WHERE s.nombre IN (
+    -- Servidores que tengan la maxima cantidad de canales con al menos un mensaje 
     SELECT c.nombreServidor
     FROM canal c
     WHERE EXISTS (
-    	SELECT 1
-    	FROM mensaje m
-    	WHERE m.nombreCanal = c.nombreCanal
+    		SELECT 1
+			FROM mensaje m
+    		WHERE c.nombreCanal = m.nombreCanal
+        )
+    GROUP BY c.nombreServidor
+    HAVING count(c.nombreCanal) = (
+        SELECT MAX(count(c1.nombreCanal))
+        FROM canal c1
+        GROUP BY c1.nombreServidor
     )
-);
+)
+AND s.nombreUsuarioCreador IN ('PEDRO GONZALEZ', 'JUAN ORT');
 
 -- Ejercicio 9
 SELECT nomServidor AS "Nombre del servidor", ROUND ((CantMsjServ / CantUsuServ), 2) AS "Promedio de mensajes por servidor"
@@ -297,4 +283,4 @@ FROM (
     GROUP BY m.nombreUsuario
     HAVING count(m.numero) > 0
 )
-WHERE UsuarioTotal = Usuario
+WHERE UsuarioTotal = Usuario;
