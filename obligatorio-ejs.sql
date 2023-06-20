@@ -1,6 +1,6 @@
+-- Obligatorio
 ALTER SESSION SET NLS_DATE_FORMAT='DD/MM/YYYY'; 
 
--- Obligatorio
 -- Ejericicio 1
 SELECT su.nombreUsuario
 FROM se_une su
@@ -36,8 +36,6 @@ AND EXISTS (
 );
 
 -- Ejercicio 3
--- Muestra los nombres de usuario que estan unidos a mas de un servidor y existe al menos 
--- un mensaje de ellos en algun canal del servidor
 SELECT DISTINCT su.nombreUsuario
 FROM se_une su
 WHERE su.nombreUsuario IN (
@@ -56,81 +54,7 @@ AND EXISTS (
     AND m.nombreUsuario = su.nombreUsuario
 );
 
--- EMPIEZAN LOS 4
-
 -- Ejercicio 4
--- Los servidores que no exista algun usuario de uruguay o argentina que no este unido
-SELECT s.nombre, s.descripcion
-FROM servidor s
-WHERE NOT EXISTS (
-    SELECT 1
-    FROM usuario u
-    WHERE u.pais IN ('URUGUAY', 'ARGENTINA')
-    AND NOT EXISTS (
-    	SELECT 1
-    	FROM se_une su
-        WHERE su.nombreServidor = s.nombre
-        AND su.nombreUsuario = u.nombreUsuario
-    )
-)
-INTERSECT
--- Los servidores que no tengan usuarios de uruguay o argentina que tengan mensajes
-SELECT s.nombre, s.descripcion
-FROM servidor s
-WHERE NOT EXISTS (
-    SELECT 1
-    FROM usuario u
-    WHERE u.pais IN ('URUGUAY', 'ARGENTINA')
-    AND EXISTS (
-		SELECT 1
-    	FROM canal c, mensaje m
-    	WHERE m.nombreUsuario = u.nombreUsuario
-    	AND c.nombreServidor = s.nombre
-        AND c.nombreCanal = m.nombreCanal
-    )
-);
--- La interseccion da los servidores que tegan a todos los usuarios de uruguay o argentina y que no hayan mandado mensajes
-
--- Servidores que tengan al menos un usuario del conjunto de abajo
-SELECT s.nombre, s.descripcion
-FROM servidor s
-WHERE s.nombre IN (
-    SELECT su.nombreServidor
-    FROM se_une su
-    WHERE su.nombreUsuario IN (
-        -- Conjunto de uru o arg que no tengan msj en ningun servidor
-        SELECT u.nombreUsuario 
-        FROM usuario u
-        WHERE u.pais IN ('URUGUAY', 'ARGENTINA')
-        AND NOT EXISTS (
-            SELECT 1
-            FROM mensaje m
-            WHERE m.nombreUsuario = u.nombreUsuario
-        )
-    )
-);
-
-
-SELECT s.nombre, s.descripcion
-FROM servidor s
-WHERE NOT EXISTS (
-    SELECT 1 
-    FROM usuario u
-    WHERE u.pais IN ('URUGUAY', 'ARGENTINA')
-    AND EXISTS (
-        SELECT 1
-        FROM mensaje m
-        WHERE m.nombreUsuario = u.nombreUsuario
-    )
-    AND NOT EXISTS (
-        SELECT 1
-        FROM se_une su
-        WHERE su.nombreUsuario = u.nombreUsuario
-    )
-);
-
--- Ejercicio 4
--- Todos los servidores que tengan a todos los usuarios de uruguay o argentina que no tengan mensajes en ningun servidor
 SELECT s.nombre, s.descripcion
 FROM servidor s
 WHERE NOT EXISTS (
@@ -138,7 +62,6 @@ WHERE NOT EXISTS (
     FROM usuario u
     WHERE u.pais IN ('URUGUAY', 'ARGENTINA')
     AND NOT EXISTS (
-    -- Que no tengan mensajes??
         SELECT 1
         FROM mensaje m
         WHERE m.nombreUsuario = u.nombreUsuario
@@ -150,9 +73,6 @@ WHERE NOT EXISTS (
     	AND s.nombre = su.nombreServidor
     )
 );
-
-
--- TERMINAN LOS 4
 
 
 -- Ejercicio 5
