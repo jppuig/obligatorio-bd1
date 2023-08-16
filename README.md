@@ -1,5 +1,7 @@
 # Obligatorio 2 - Base de datos 1
 
+## Este README hace referencia al pdf que se encuentra en el repositorio el cual es el original.
+
 ## Considerando el siguiente esquema relacional relacionado Discord y el subsistema de mensajería:
 
  Usuario (nombreUsuario, pais, correoElectronico, fechaRegistro, clave)
