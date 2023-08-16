@@ -50,6 +50,8 @@ CREATE TABLE MENSAJE (
     CONSTRAINT PK_MENSAJE_USUARIO FOREIGN KEY (nombreUsuario) REFERENCES USUARIO (nombreUsuario)
 );
 
+
+-- Inserts
 INSERT INTO usuario VALUES ('SHAKIRA', 'COLOMBIA', 'shakira@gmail.com', '08/05/2023', 'CLAVESHAKI');
 INSERT INTO usuario VALUES ('CUADRADO', 'COLOMBIA', 'cuadrado@gmail.com', '08/05/2023', 'CLAVECUBO');
 INSERT INTO usuario VALUES ('VINI JR', 'BRASIL', 'vinijr@gmail.com', '01/05/2023', 'CLAVEVINI');
